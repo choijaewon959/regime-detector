@@ -7,6 +7,10 @@ on:
         description: Start date in YYYY-MM-DD format
         required: true
         default: "2000-01-01"
+      end:
+        description: End date in YYYY-MM-DD format
+        required: true
+        default: "2026-06-30"
   schedule:
     - cron: "0 21 * * 5"
 
@@ -26,7 +30,7 @@ jobs:
         run: pip install -e .
 
       - name: Collect raw market data
-        run: python -m regime_detector collect --start "${{ github.event.inputs.start || '2000-01-01' }}" --output-dir data/raw
+        run: python -m regime_detector collect --start "${{ github.event.inputs.start || '2000-01-01' }}" --end "${{ github.event.inputs.end || '2026-06-30' }}" --output-dir data/raw
 
       - name: Upload raw data artifact
         uses: actions/upload-artifact@v4

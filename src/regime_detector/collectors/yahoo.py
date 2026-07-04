@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -16,19 +17,30 @@ class YahooDataset:
     returns: pd.DataFrame
 
 
+@dataclass(frozen=True)
+class YahooMarketDataCollector:
+    symbols: list[str]
+
+    def collect_daily(self, start: str, end: str | None = None) -> YahooDataset:
+        return collect_daily_market_data(symbols=self.symbols, start=start, end=end)
+
+    def write_daily(self, output_dir: Path, start: str, end: str | None = None) -> dict[str, str]:
+        return write_dataset(dataset=self.collect_daily(start=start, end=end), output_dir=output_dir)
+
+
 def collect_daily_market_data(
     symbols: list[str],
     start: str,
     end: str | None = None,
 ) -> YahooDataset:
-    """Download daily adjusted price and volume data for a symbol list."""
+    """Download daily adjusted price and volume data through the inclusive end date."""
     if not symbols:
         raise ValueError("At least one symbol is required.")
 
     raw = yf.download(
         tickers=symbols,
         start=start,
-        end=end,
+        end=_to_yahoo_exclusive_end(end),
         auto_adjust=True,
         progress=False,
         group_by="column",
@@ -86,3 +98,9 @@ def _clean_frame(frame: pd.DataFrame) -> pd.DataFrame:
     frame = frame.loc[:, frame.notna().any(axis=0)]
     frame.columns = [str(column) for column in frame.columns]
     return frame
+
+
+def _to_yahoo_exclusive_end(end: str | None) -> str | None:
+    if end is None:
+        return None
+    return (pd.Timestamp(end) + timedelta(days=1)).strftime("%Y-%m-%d")

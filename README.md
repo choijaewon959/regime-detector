@@ -26,7 +26,7 @@ pip install -e ".[dev]"
 ## Collect Data
 
 ```bash
-python -m regime_detector collect --start 2000-01-01
+python -m regime_detector collect --start 2000-01-01 --end 2026-06-30
 ```
 
 By default, files are written to:
@@ -41,6 +41,25 @@ The collector writes:
 - `volumes_daily.csv`: daily volume where available
 - `returns_daily.csv`: daily percentage returns
 - `collection_manifest.json`: run metadata and ticker mapping
+
+Unless overridden, daily collectors end on `2026-06-30`. Monthly collectors use `202606`.
+
+## Additional Collectors
+
+The project also includes simple collectors for the other regime datasets discussed:
+
+```bash
+python -m regime_detector collect-fundamentals --end 2026-06-30
+FRED_API_KEY=... python -m regime_detector collect-fred --start 2000-01-01 --end 2026-06-30
+BOK_ECOS_API_KEY=... python -m regime_detector collect-bok --start 200001 --end 202606
+KOSIS_API_KEY=... python -m regime_detector collect-kosis --start 200001 --end 202606
+```
+
+Notes:
+
+- Yahoo Finance market data and fundamentals do not need a project API key, but are intended for research/personal use.
+- FRED, BOK ECOS, and KOSIS provide free APIs, but require user-issued API keys.
+- BOK/KOSIS starter series are intentionally empty until exact official table IDs are selected.
 
 ## Scheduled Job
 
